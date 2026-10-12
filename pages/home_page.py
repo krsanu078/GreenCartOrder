@@ -3,6 +3,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import StaleElementReferenceException
+
 
 class HomePage:
     URL = os.getenv("PAGE_URL", "https://rahulshettyacademy.com/seleniumPractise/")
@@ -10,9 +12,9 @@ class HomePage:
     SEARCH_INPUT = (By.CSS_SELECTOR, "input.search-keyword")
     QUANTITY_INPUT = (By.XPATH, '//input[@class="quantity"]')
     ADD_TO_CART_BTN = (By.XPATH, '//button[text()="ADD TO CART"]')
-    CART_ICON = (By.CSS_SELECTOR, "img[alt='Cart']")
-    CART_PRODUCT_NAMES = (By.XPATH, '//p[@class="product-name"]')
-    PROCEED_TO_CHECKOUT_BTN = (By.XPATH, "//button[text()='PROCEED TO CHECKOUT']")
+    CART_ICON = (By.CSS_SELECTOR, 'a.cart-icon')
+    CART_PRODUCT_NAMES = (By.XPATH, '//h4[@class="product-name"]')
+    PROCEED_TO_CHECKOUT_BTN = (By.XPATH, '//button[text()="PROCEED TO CHECKOUT"]')
 
     def __init__(self, driver, timeout=10):
         self.driver = driver
@@ -28,10 +30,26 @@ class HomePage:
         # wait for search results to appear
         self.wait.until(lambda d: len(d.find_elements(*self.CART_PRODUCT_NAMES)) > 0)
 
+    # def set_quantity(self, qty):
+    #     q = self.wait.until(EC.element_to_be_clickable(self.QUANTITY_INPUT))
+        # q.clear()
+        # q.send_keys(str(qty))
+
+
+
+
     def set_quantity(self, qty):
-        q = self.wait.until(EC.visibility_of_element_located(self.QUANTITY_INPUT))
-        q.clear()
-        q.send_keys(str(qty))
+        for _ in range(3):
+            try:
+                q = self.wait.until(EC.element_to_be_clickable(self.QUANTITY_INPUT))
+                q.clear()
+                q.send_keys(str(qty))
+                return
+            except StaleElementReferenceException:
+                continue
+        raise StaleElementReferenceException(
+            f"Quantity element remained stale after 3 attempts: {self.QUANTITY_INPUT}"
+        )
 
     def add_to_cart(self):
         btn = self.wait.until(EC.element_to_be_clickable(self.ADD_TO_CART_BTN))
@@ -43,7 +61,7 @@ class HomePage:
 
     def get_cart_preview_products(self):
         # click cart icon then read names without proceeding
-        self.driver.find_element(*self.CART_ICON).click()
+        self.wait.until(EC.element_to_be_clickable(self.CART_ICON)).click()
         items = self.wait.until(EC.presence_of_all_elements_located(self.CART_PRODUCT_NAMES))
         names = [i.text for i in items]
         return names

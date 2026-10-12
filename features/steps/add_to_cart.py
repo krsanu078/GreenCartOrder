@@ -28,6 +28,8 @@ def step_verify_preview(context):
     preview = context.home.get_cart_preview_products()
     # Normalize names for comparison
     preview_names = [p.lower().strip() for p in preview]
+    print(preview_names)
     expected = [v.lower().strip() for v in context.vegetables]
+    print(expected)
     for exp in expected:
         assert any(exp in p for p in preview_names), f"{exp} not found in cart preview: {preview_names}"

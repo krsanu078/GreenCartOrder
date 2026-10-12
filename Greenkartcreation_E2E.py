@@ -12,7 +12,7 @@ from selenium.webdriver.support.select import Select
 
 #---------------------------------------------------------------------------
 #-----------------Giving inputs using Excel sheet---------------------------   
-data_input=openpyxl.load_workbook(r"C:\Users\skuma183\Pictures\GreenCart Order System\GreenCartOrder.xlsx")        
+data_input=openpyxl.load_workbook(r"F:\GreenCartOrder\GreenCartOrder.xlsx")        
 sheet = data_input.active
 vegetables=[]
 quantity_in_kg=[]
@@ -22,7 +22,8 @@ for i in range(2,sheet.max_row+1):
 
 #----------------------------------------------------------------------------
 # ---------------Browser Invocation------------------------------------------
-driver = webdriver.Chrome(executable_path=r"C:\Users\skuma183\Pictures\chromedriver_win32.exe")
+# driver = webdriver.Chrome(executable_path=r"C:\Users\skuma183\Pictures\chromedriver_win32.exe")
+driver = webdriver.Chrome()
 driver.maximize_window()
 driver.implicitly_wait(5)
 driver.get("https://rahulshettyacademy.com/seleniumPractise/")
