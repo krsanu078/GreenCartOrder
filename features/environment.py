@@ -8,7 +8,7 @@ def before_all(context):
     options = Options()
     headless = os.getenv("HEADLESS", "1")
     if headless in ("1", "true", "True"):
-        options.add_argument("--headless=new")
+        # options.add_argument("--headless=new")
         options.add_argument("--disable-gpu")
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
