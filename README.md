@@ -43,6 +43,7 @@ utils/excel_reader.py     Excel test-data reader
 GreenCartOrder.xlsx       Sample product, quantity, promo, and country data
 run_tests.py              Ordered full-suite runner
 behave.ini                HTML formatter and report output configuration
+report/                   Generated HTML report for the latest run
 requirements.txt          Python dependencies
 .github/workflows/ci.yml  Starter GitHub Actions test workflow
 ```
@@ -78,11 +79,11 @@ If the virtual environment is already active, run `python run_tests.py` directly
 behave features\search_product.feature
 ```
 
-This runs only the selected feature and replaces the same HTML report.
+This runs only the selected feature and replaces `report/behave-report.html`.
 
 ## HTML Report
 
-Every run creates or replaces `behave-report.html` in the project root. Open that file in a browser to see feature and scenario results. Expand a step's attachments to inspect its screenshot and text log, including status and duration. Failed steps also include failure details and the Python traceback. The generated report is ignored by Git because it is a run artifact and can become large.
+Every run creates or replaces `report/behave-report.html`. Open that file in a browser to see feature and scenario results. Expand a step's attachments to inspect its screenshot and text log, including status and duration. Failed steps also include failure details and the Python traceback. The generated report is included in the project tree and is also uploaded as a GitHub Actions artifact.
 
 ## Test Data
 
@@ -117,7 +118,7 @@ The target must expose compatible product search, cart, checkout, and promo-code
 
 ## CI Status
 
-`.github/workflows/ci.yml` runs the same unit and ordered browser-test runner on pushes and pull requests, with `HEADLESS=1`. It uploads `behave-report.html` as a GitHub Actions artifact even if the tests fail; download the `behave-html-report` artifact from the workflow run summary. This is CI, not deployment/CD; deployment is intentionally outside this test project's current scope.
+`.github/workflows/ci.yml` runs the same unit and ordered browser-test runner on pushes and pull requests, with `HEADLESS=1`. It uploads `report/behave-report.html` as a GitHub Actions artifact even if the tests fail; download the `behave-html-report` artifact from the workflow run. This is CI, not deployment/CD; deployment is intentionally outside this test project's current scope.
 
 ## Known Constraints
 
