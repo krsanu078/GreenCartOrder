@@ -16,5 +16,5 @@ Feature: Promo code validation and totals
 		Examples:
 			| code                 | message               |
 			| rahulshettyacademy   | Code applied ..!      |
-			|                       | Empty code ..!        |
+			|                      | Empty code ..!        |
 			| invalidcode          | Invalid code ..!      |
