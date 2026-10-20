@@ -1,16 +1,8 @@
-from behave import given, when, then
-from pages.home_page import HomePage
-import time
-
-# @given('the user is on the home page')
-# def step_impl(context):
-#     context.home = HomePage(context.driver)
-#     context.home.open()
+from behave import when, then
 
 @when('the user searches for "{query}"')
 def step_impl(context, query):
     context.home.search(query)
-    time.sleep(1)
 
 @then('search results should contain "{query}"')
 def step_impl(context, query):

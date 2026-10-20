@@ -3,9 +3,11 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.select import Select
+from selenium.common.exceptions import StaleElementReferenceException
 
 class CheckoutPage:
     CHECKOUT_PRODUCT_NAMES = (By.CSS_SELECTOR, "p.product-name")
+    CHECKOUT_ITEM_ROWS = (By.XPATH, '//tr[.//p[@class="product-name"]]')
     PROMO_INPUT = (By.CLASS_NAME, "promoCode")
     PROMO_BTN = (By.CSS_SELECTOR, ".promoBtn")
     PROMO_INFO = (By.CSS_SELECTOR, "span.promoInfo")
@@ -20,9 +22,33 @@ class CheckoutPage:
         self.driver = driver
         self.wait = WebDriverWait(driver, timeout)
 
+    def get_checkout_items(self):
+        self.wait.until(EC.visibility_of_element_located(self.PROMO_INPUT))
+
+        def read_items(driver):
+            try:
+                items = []
+                for row in driver.find_elements(*self.CHECKOUT_ITEM_ROWS):
+                    name = row.find_element(*self.CHECKOUT_PRODUCT_NAMES).text.strip()
+                    quantity = row.find_element(By.CSS_SELECTOR, "td:nth-child(3) p").text.strip()
+                    unit_price = row.find_element(By.CSS_SELECTOR, "td:nth-child(4) p").text.strip()
+                    line_total = row.find_element(By.CSS_SELECTOR, "td:nth-child(5) p").text.strip()
+                    items.append(
+                        {
+                            "name": name,
+                            "quantity": int(quantity),
+                            "unit_price": int(unit_price),
+                            "line_total": int(line_total),
+                        }
+                    )
+                return items or False
+            except StaleElementReferenceException:
+                return False
+
+        return self.wait.until(read_items)
+
     def get_checkout_products(self):
-        elems = self.wait.until(EC.presence_of_all_elements_located(self.CHECKOUT_PRODUCT_NAMES))
-        return [e.text for e in elems]
+        return [item["name"] for item in self.get_checkout_items()]
 
     def apply_promo(self, code):
         promo_input = self.wait.until(EC.visibility_of_element_located(self.PROMO_INPUT))

@@ -1,6 +1,12 @@
-from behave import when, then
+from behave import given, when, then
 from pages.checkout_page import CheckoutPage
 from pages.order_confirmation_page import OrderConfirmationPage
+
+@given('the user proceeds to checkout')
+def step_proceed_to_checkout(context):
+    context.home.open_cart()
+    context.home.proceed_to_checkout()
+    context.checkout = CheckoutPage(context.driver)
 
 @when('the user places the order using the country from the data file')
 def step_place_order(context):

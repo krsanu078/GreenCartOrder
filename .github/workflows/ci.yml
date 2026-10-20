@@ -2,7 +2,7 @@ name: CI - Selenium BDD
 
 on:
   push:
-    branches: [ "selenium-bdd-setup", "main" ]
+    branches: [ "master", "selenium-bdd-setup", "main" ]
   pull_request:
 
 jobs:
@@ -18,8 +18,16 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-      - name: Run behave
+      - name: Run unit and browser tests
         env:
           HEADLESS: "1"
         run: |
-          behave -f progress
+          python run_tests.py
+      - name: Upload HTML test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: behave-html-report
+          path: behave-report.html
+          if-no-files-found: warn
+          retention-days: 14

@@ -7,6 +7,11 @@ def step_apply_promo(context, code):
     context.checkout = getattr(context, "checkout", CheckoutPage(context.driver))
     context.checkout.apply_promo(code)
 
+@when('the user applies the promo code ""')
+def step_apply_empty_promo(context):
+    context.checkout = getattr(context, "checkout", CheckoutPage(context.driver))
+    context.checkout.apply_promo("")
+
 @then('the promo message should be "{message}"')
 def step_verify_promo_message(context, message):
     msg = context.checkout.get_promo_message()

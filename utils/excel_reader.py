@@ -1,35 +1,64 @@
 import os
+import zipfile
+from pathlib import Path
+
 import openpyxl
+from openpyxl.utils.exceptions import InvalidFileException
+
+
+EXPECTED_HEADERS = ("Item", "Quantities", "Promo_code", "Country")
 
 def load_test_data(path=None):
-    """
-    Returns dict:
-      {
-        "vegetables": [..],
-        "quantities": [..],
-        "promocode": "...",
-        "country": "IN"  # or whatever value your select expects
-      }
-    """
     if path is None:
-        path = os.path.join(os.getcwd(), "GreenCartOrder.xlsx")
-    wb = openpyxl.load_workbook(path)
-    sheet = wb.active
+        path = os.getenv("TEST_DATA_FILE")
+    if path is None:
+        path = Path(__file__).resolve().parent.parent / "GreenCartOrder.xlsx"
+    workbook_path = Path(path).expanduser().resolve()
+    if not workbook_path.is_file():
+        raise FileNotFoundError(f"Test data workbook not found: {workbook_path}")
+
+    try:
+        workbook = openpyxl.load_workbook(workbook_path, data_only=True, read_only=True)
+    except (InvalidFileException, OSError, zipfile.BadZipFile) as error:
+        raise ValueError(f"Could not read test data workbook: {workbook_path}") from error
+
+    sheet = workbook.active
+    headers = tuple(sheet.cell(row=1, column=column).value for column in range(1, 5))
+    if headers != EXPECTED_HEADERS:
+        workbook.close()
+        expected = ", ".join(EXPECTED_HEADERS)
+        actual = ", ".join(str(header) for header in headers)
+        raise ValueError(f"Expected Excel headers [{expected}], found [{actual}]")
+
     vegetables = []
     quantities = []
-    # assuming data layout similar to original script: col1=name, col2=qty, col3=promo, col4=country (row2 onwards for veg)
-    for i in range(2, sheet.max_row + 1):
-        name = sheet.cell(row=i, column=1).value
-        q = sheet.cell(row=i, column=2).value
-        if name is None:
-            continue
-        vegetables.append(str(name))
-        try:
-            quantities.append(int(q))
-        except Exception:
-            quantities.append(1)
-    promocode = sheet.cell(row=2, column=3).value or ""
-    country = sheet.cell(row=2, column=4).value or ""
+    try:
+        for row_number in range(2, sheet.max_row + 1):
+            name = sheet.cell(row=row_number, column=1).value
+            quantity_value = sheet.cell(row=row_number, column=2).value
+            if name is None or not str(name).strip():
+                continue
+            try:
+                quantity = int(quantity_value)
+                is_integer = float(quantity_value) == quantity
+            except (TypeError, ValueError, OverflowError):
+                is_integer = False
+                quantity = 0
+            if isinstance(quantity_value, bool) or not is_integer or quantity <= 0:
+                raise ValueError(
+                    f"Invalid quantity at row {row_number}: expected a positive integer"
+                )
+            vegetables.append(str(name).strip())
+            quantities.append(quantity)
+
+        if not vegetables:
+            raise ValueError("Test data workbook contains no product rows")
+
+        promocode = sheet.cell(row=2, column=3).value or ""
+        country = sheet.cell(row=2, column=4).value or ""
+    finally:
+        workbook.close()
+
     return {
         "vegetables": vegetables,
         "quantities": quantities,
