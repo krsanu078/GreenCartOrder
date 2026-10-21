@@ -19,6 +19,7 @@ class CheckoutPage:
     TERMS_CHECKBOX = (By.XPATH, '//input[@type="checkbox"]')
 
     def __init__(self, driver, timeout=10):
+        
         self.driver = driver
         self.wait = WebDriverWait(driver, timeout)
 
